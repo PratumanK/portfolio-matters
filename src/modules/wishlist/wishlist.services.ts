@@ -56,7 +56,7 @@ export const removeStockToWishlistService = async (
 export const getWishlistService  = async (
   userId: string
 ) => {
-  const user = await User.findById(userId);
+  const user = await User.findById(userId).populate("wishlist");
   if (!user) {
     throw new Error("User not found");
   }

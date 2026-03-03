@@ -13,11 +13,11 @@ export const buyHoldingService = async (
     userId,
     stockId,
   });
- 
+
   if (!existing) {
    return await Holding.create({
-      userId,
-      stockId,
+        userId: new mongoose.Types.ObjectId(userId),
+       stockId: new mongoose.Types.ObjectId(stockId),
       quantity,
       avgBuyPrice: buyPrice,
     });
@@ -44,6 +44,7 @@ export const sellHoldingService = async (
     userId,
     stockId,
   });
+  
    if (!existing) {
     throw new Error("No holding found");
   }

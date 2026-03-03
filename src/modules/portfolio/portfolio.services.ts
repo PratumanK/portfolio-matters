@@ -23,7 +23,7 @@ export const getPortfolioSummaryService = async (userId: string) => {
 
     {
       $addFields: {
-        investedAmount: { $multiply: ["$quantity", "$buyPrice"] },
+        investedAmount: { $multiply: ["$quantity", "$avgBuyPrice"] },
         currentAmount: { $multiply: ["$quantity", "$stock.currentPrice"] }
       }
     },
@@ -42,12 +42,23 @@ export const getPortfolioSummaryService = async (userId: string) => {
         totalInvested: 1,
         currentValue: 1,
         profitLoss: { $subtract: ["$currentValue", "$totalInvested"] },
-        profitLossPercentage: {
-        $multiply: [
-          { $divide: [{ $subtract: ["$currentValue", "$totalInvested"] }, "$totalInvested"] },
-          100
-        ]
-       }
+     profitLossPercentage: {
+  $cond: [
+    { $eq: ["$totalInvested", 0] },
+    0,
+    {
+      $multiply: [
+        {
+          $divide: [
+            { $subtract: ["$currentValue", "$totalInvested"] },
+            "$totalInvested"
+          ]
+        },
+        100
+      ]
+    }
+  ]
+}
       }
     }
   ]);
@@ -156,28 +167,32 @@ export const getTopMoversService = async (userId: string) => {
 
   {
       $addFields: {
-        investedAmount: { $multiply: ["$quantity", "$buyPrice"] },
-        currentAmount: { $multiply: ["$quantity", "$stock.currentPrice"] },
-      profitLoss: { $subtract: ["$currentAmount", "$investedAmount"] },
-           profitLossPercentage: {
-        $multiply: [
-          { $divide: [{ $subtract: ["$currentAmount", "$investedAmount"] }, "$investedAmount"] },
-          100
-        ]
-       }
+        investedAmount: { $multiply: ["$quantity", "$avgBuyPrice"] },
+        currentAmount: { $multiply: ["$quantity", "$stock.currentPrice"] }
       }
     },
-    // {
-    //   $addFields: {
-    //     profitLoss: { $subtract: ["$currentAmount", "$investedAmount"] },
-    //        profitLossPercentage: {
-    //     $multiply: [
-    //       { $divide: [{ $subtract: ["$currentAmount", "$investedAmount"] }, "$investedAmount"] },
-    //       100
-    //     ]
-    //    }
-    //   }
-    // },
+    {
+      $addFields: {
+        profitLoss: { $subtract: ["$currentAmount", "$investedAmount"] },
+         profitLossPercentage: {
+  $cond: [
+    { $eq: ["$investedAmount", 0] },
+    0,
+    {
+      $multiply: [
+        {
+          $divide: [
+            { $subtract: ["$currentValue", "$investedAmount"] },
+            "$investedAmount"
+          ]
+        },
+        100
+      ]
+    }
+  ]
+}
+      }
+    },
     {
   $facet: {
     topGainer: [
@@ -202,9 +217,8 @@ export const simulatePortfolioService = async (
   marketChangePercent: number
 ) => {
     const summary= await getPortfolioSummaryService(userId);
-    const totalValue=summary.cuurentValue;
-    const projectedValue =
-    totalValue * (1 + marketChangePercent / 100);
+    const totalValue = summary.currentValue;
+    const projectedValue = totalValue * (1 + marketChangePercent / 100);
     let hhi:number=0;
     const sectors=await getSectorService(userId);
     for (const sector of sectors) {

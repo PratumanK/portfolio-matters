@@ -27,7 +27,7 @@ import type { JwtPayload } from "jsonwebtoken";
 // if (typeof decodedTokenInfo === "string") {
 //   return res.status(401).json({ message: "Invalid token" });
 // }
-    req.user = {id: decodedTokenInfo.id as string};
+    req.user = {id: decodedTokenInfo.userId as string};
 
     next();
   } catch (error) {
