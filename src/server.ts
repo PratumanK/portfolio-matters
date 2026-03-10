@@ -11,6 +11,7 @@ import { router as holdingRoutes } from "./modules/holdings/holdings.routes.js";
 import { router as summaryRoutes } from "./modules/portfolio/portfolio.routes.js";
 import { startStockCron } from "./jobs/stockIngestion.jobs.js";
 import { startPortfolioSnapshotCron } from "./jobs/snapshot.jobs.js";
+import { startPriceAlertCron } from "./jobs/alertCheck.jobs.js";
 
 
 const PORT = process.env.PORT || 3001;
@@ -23,6 +24,7 @@ const startServer = async () => {
   await connectToDatabase(); //  DB connection is checked ONCE here
   startStockCron();
   startPortfolioSnapshotCron();
+  startPriceAlertCron();
   
 
   app.listen(PORT, () => {

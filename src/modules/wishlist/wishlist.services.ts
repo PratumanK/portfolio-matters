@@ -22,7 +22,13 @@ export const addStockToWishlistService = async (
     throw new Error("Stock already in wishlist");
   }
   
-  user.wishlist.push(new mongoose.Types.ObjectId(stockId));
+  user.wishlist.push(
+    {
+      stock: new mongoose.Types.ObjectId(stockId),
+      alertTriggered:false,
+      alertActive:false
+    }
+  );
   await user.save();
 
   return user.wishlist;
@@ -40,7 +46,7 @@ export const removeStockToWishlistService = async (
 
     const updatedUser = await User.findByIdAndUpdate(
     userId,
-    { $pull: { wishlist: stockId } },
+    { $pull: { wishlist:{stock:stockId }} },
     { new: true }
   );
     if (!updatedUser) {
@@ -56,10 +62,35 @@ export const removeStockToWishlistService = async (
 export const getWishlistService  = async (
   userId: string
 ) => {
-  const user = await User.findById(userId).populate("wishlist");
+  const user = await User.findById(userId).populate("wishlist.stock");
   if (!user) {
     throw new Error("User not found");
   }
   return user.wishlist;
 
+}
+
+export const setPriceAlert  = async (
+  userId: string,
+  stockId: string,
+  alertPrice:number,
+  alertType:"above"|"below"
+) => {
+ const user = await User.findById(userId);
+ if (!user) {
+    throw new Error("User not found");
+  }
+    const wishlistItem = user.wishlist.find(
+    (item) => item.stock.toString() === stockId
+  );
+
+  if (!wishlistItem) {
+    throw new Error("Stock not in wishlist");
+  }
+  wishlistItem.alertActive=true;
+  wishlistItem.alertType=alertType;
+  wishlistItem.alertPrice=alertPrice;
+    await user.save();
+
+  return wishlistItem;
 }

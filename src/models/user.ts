@@ -1,6 +1,5 @@
 import mongoose from "mongoose";
 import type { IUser } from "../types/user.types.js";
-import { Stock } from "./stock.js";
 
 const userSchema= new mongoose.Schema<IUser>({
  userName:{
@@ -26,9 +25,28 @@ const userSchema= new mongoose.Schema<IUser>({
  },
    wishlist: [
     {
+         stock: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Stock"
+      ref: "Stock",
+      required: true
+    },
+    alertPrice: {
+      type: Number
+    },
+    alertType: {
+      type: String,
+      enum: ["above", "below"]
+    },
+    alertActive: {
+      type: Boolean,
+      default: false
+    },
+    alertTriggered: {
+      type: Boolean,
+      default: false
     }
+    }
+  
   ]
 })
 export const User = mongoose.model('User', userSchema);
