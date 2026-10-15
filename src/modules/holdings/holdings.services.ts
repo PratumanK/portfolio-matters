@@ -1,5 +1,13 @@
 import mongoose from "mongoose";
 import { Holding } from "../../models/holding.js";
+import { Stock } from "../../models/stock.js";
+
+export const getHoldingsService = async (userId: string) => {
+  void Stock;
+  return await Holding.find({ userId: new mongoose.Types.ObjectId(userId) })
+    .populate("stockId")
+    .sort({ updatedAt: -1 });
+};
 
 
 

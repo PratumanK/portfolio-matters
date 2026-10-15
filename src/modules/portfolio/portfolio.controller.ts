@@ -36,8 +36,9 @@ export const getReturn = async (req: Request, res: Response) => {
     if (!req.user) {
       return res.status(401).json({ message: "Unauthorized" });
     }
-    const {days}=  req.body;
-    if(typeof days !== "number"){
+    const rawDays = req.query.days !== undefined ? req.query.days : req.body?.days;
+    const days = typeof rawDays === "string" ? parseInt(rawDays, 10) : rawDays;
+    if(typeof days !== "number" || isNaN(days)){
        return res.status(400).json({ message: "Days should be a number" });
     }
     const result = await getReturnService(req.user.id,days);
@@ -70,7 +71,8 @@ export const getSimulation = async (req: Request, res: Response) => {
       return res.status(401).json({ message: "Unauthorized" });
     }
 
-    const { marketChangePercent } = req.body;
+    const rawChange = req.query.marketChangePercent !== undefined ? req.query.marketChangePercent : req.body?.marketChangePercent;
+    const marketChangePercent = typeof rawChange === "string" ? parseFloat(rawChange) : rawChange;
 
     if (
       typeof marketChangePercent !== "number" ||
